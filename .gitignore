@@ -1,0 +1,12 @@
+
+# Dependency directories
+node_modules/ 
+
+# MAC OS temp files
+.DS_Store
+
+# Build output
+.next/
+
+# Ignore any environment variable files - these will hold API keys so should NOT be uploaded to GitHub.
+.env
