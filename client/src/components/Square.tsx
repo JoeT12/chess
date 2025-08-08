@@ -11,6 +11,7 @@ interface SquareProps {
   clicked?: boolean;
   setSelectedSquares: (row: number, col: number) => void;
   mapCoords: (row: number, col: number) => [number, number];
+  disabled?: boolean;
 }
 
 export default function Square({
@@ -20,12 +21,14 @@ export default function Square({
   clicked,
   setSelectedSquares,
   mapCoords,
+  disabled = false
 }: SquareProps) {
   const [row, col] = position;
   const isDark = (row + col) % 2 === 1;
 
   const [, drop] = useDrop(() => ({
     accept: "piece",
+    canDrop: () => !disabled,
     drop: (item: { position: [number, number] }) => {
       const from = mapCoords(item.position[0], item.position[1]);
       const to = mapCoords(row, col);
@@ -43,7 +46,7 @@ export default function Square({
       }`}
       onClick={() => setSelectedSquares(row, col)}
     >
-      {isValidPiece && <Piece piece={piece} position={position} />}
+      {isValidPiece && <Piece piece={piece} position={position} disabled={disabled} />}
     </div>
   );
 }

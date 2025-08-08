@@ -23,6 +23,7 @@ type ChessBoardProps = {
     to: [number, number],
     promotion: string
   ) => void;
+  disabled?: boolean;
 };
 
 export default function ChessBoard({
@@ -30,6 +31,7 @@ export default function ChessBoard({
   playerColor,
   turn = "w",
   onMove,
+  disabled
 }: ChessBoardProps) {
   const [selectedSquares, setSelectedSquares] = useState<Array<[number, number]>>([]);
   const [promotionModalOpen, setPromotionModalOpen] = useState(false);
@@ -113,6 +115,7 @@ export default function ChessBoard({
 
   const setClicked = useCallback(
     (row: number, col: number) => {
+      if (disabled) return;
       const [actualRow, actualCol] = mapCoords(row, col);
 
       setSelectedSquares((prevSelectedSquares) => {
@@ -169,6 +172,7 @@ export default function ChessBoard({
                       }
                       setSelectedSquares={setClicked}
                       mapCoords={mapCoords}
+                      disabled={disabled}
                     />
                   ))}
                 </div>

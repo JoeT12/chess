@@ -7,6 +7,13 @@ import socket from "@/lib/socket";
 import { UUID } from "crypto";
 import ChessBoard from "@/components/ChessBoard";
 import { board } from "@/constants/chess";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function PlayOnline() {
   const [matchingApponent, setMatchingOpponent] = useState(false);
@@ -15,6 +22,9 @@ export default function PlayOnline() {
   const [board, setBoard] = useState<board>([]);
   const [activeColor, setActiveColor] = useState<"w" | "b">("w");
   const [localPlayerColor, setLocalPlayerColor] = useState<"w" | "b">("w");
+
+  const [winner, setWinner] = useState<String>("w");
+  const [gameOverModalOpen, setGameOverModalOpen] = useState(true);
 
   useEffect(() => {
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
@@ -31,9 +41,16 @@ export default function PlayOnline() {
       }
     });
 
-    socket.on("gameState", ({ board, turn }) => {
+    socket.on("gameState", ({ board, turn, gameOver }) => {
       setBoard(board);
       setActiveColor(turn);
+      // Check if the game is over after receiving the latest game state
+      if (gameOver) {
+        // On a win, the winner is opposite of the current turn
+        // If it's white's turn, black won and vice versa
+        setWinner(turn === "w" ? "b" : "w");
+        setGameOverModalOpen(true);
+      }
     });
 
     return () => {
@@ -126,6 +143,7 @@ export default function PlayOnline() {
             playerColor={localPlayerColor}
             turn={activeColor}
             onMove={handleMove}
+            disabled={winner !== ""}
           />
           <br />
           <div className="flex flex-row gap-4 justify-center items-center mt-4">
@@ -143,6 +161,47 @@ export default function PlayOnline() {
               <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
             </Card>
           </div>
+
+          {gameOverModalOpen && (
+            <>
+              <Dialog
+                open={gameOverModalOpen}
+                onOpenChange={() => {}}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-center">
+                      Game Over!
+                    </DialogTitle>
+                    <DialogDescription className="text-center">
+                      {winner === localPlayerColor ? "You Won!" : "You Lost!"}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="flex justify-around mt-1">
+                    <Button
+                      className="mt-2 bg-chessGreen text-white py-2 rounded-md"
+                      onClick={() => {
+                        // Reset game state to initial values
+                        setGameId(null);
+                        setBoard([]);
+                        setActiveColor("w");
+                        setLocalPlayerColor("w");
+                        setWinner("");
+                        setGameOverModalOpen(false);
+                      }}
+                    >
+                      Return to Lobby
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <div className="text-center mt-4">
+                <h2 className="text-2xl font-bold"></h2>
+              </div>
+            </>
+          )}
         </>
       )}
     </>

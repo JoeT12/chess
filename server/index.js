@@ -78,9 +78,9 @@ io.on('connection', (socket) => {
       }
       const move = gameObj.game.move({ from, to, promotion });
       if (move) {
-        io.to(gameId).emit('gameState', { board: gameObj.game.board(), turn: gameObj.game.turn() });
+        io.to(gameId).emit('gameState', { board: gameObj.game.board(), turn: gameObj.game.turn(), gameover: gameObj.game.isGameOver()});
       } else {
-        socket.emit('invalidMove', { from, to });
+          socket.emit('invalidMove', { from, to });
       }
   } catch (error) {
       console.error(`Error processing move: ${error.message}`);
