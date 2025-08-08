@@ -6,32 +6,34 @@ import { useEffect, useState } from "react";
 import socket from "@/lib/socket";
 import { UUID } from "crypto";
 import ChessBoard from "@/components/ChessBoard";
+import { board } from "@/constants/chess";
 
 export default function PlayOnline() {
   const [matchingApponent, setMatchingOpponent] = useState(false);
   const [gameid, setGameId] = useState<UUID | null>(null);
-  const [board, setBoard] = useState<(string | null)[][]>([]);
-  const [turn, setTurn] = useState<"white" | "black">("white");
-  const [mycolor, setMyColor] = useState<"w" | "b" | null>(null);
+
+  const [board, setBoard] = useState<board>([]);
+  const [activeColor, setActiveColor] = useState<"w" | "b">("w");
+  const [localPlayerColor, setLocalPlayerColor] = useState<"w" | "b">("w");
 
   useEffect(() => {
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
       setMatchingOpponent(false);
       setGameId(gameId);
       setBoard(board);
-      setTurn(turn === "w" ? "white" : "black");
+      setActiveColor(turn);
 
       // Interpret the turn to get our color
       if (socket.id === white) {
-        setMyColor("w");
+        setLocalPlayerColor("w");
       } else {
-        setMyColor("b");
+        setLocalPlayerColor("b");
       }
     });
 
     socket.on("gameState", ({ board, turn }) => {
       setBoard(board);
-      setTurn(turn === "w" ? "white" : "black");
+      setActiveColor(turn);
     });
 
     return () => {
@@ -42,8 +44,6 @@ export default function PlayOnline() {
       // Emit signal to server to end game with forfeit
     };
   }, []);
-
-  
 
   const handleFindOpponent = () => {
     setMatchingOpponent(true);
@@ -56,10 +56,14 @@ export default function PlayOnline() {
     return files[col] + (8 - row);
   }
 
-  const handleMove = (from: [number, number], to: [number, number], promotion: string) => {
+  const handleMove = (
+    from: [number, number],
+    to: [number, number],
+    promotion: string
+  ) => {
     if (!gameid) return;
     // get current piece in the from position
-    if(promotion === ""){
+    if (promotion === "") {
       socket.emit("makeMove", {
         gameId: gameid,
         from: toChessNotation(from),
@@ -117,27 +121,26 @@ export default function PlayOnline() {
         </>
       ) : (
         <>
-          
           <ChessBoard
             board={board}
-            playerColor={mycolor}
-            turn={turn}
+            playerColor={localPlayerColor}
+            turn={activeColor}
             onMove={handleMove}
           />
-          <br/>
+          <br />
           <div className="flex flex-row gap-4 justify-center items-center mt-4">
             <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">White</CardTitle>
               </CardHeader>
-              <p>{mycolor === 'w' ? (<>You</>) : (<>chessbro123</>)}</p>
+              <p>{localPlayerColor === "w" ? <>You</> : <>chessbro123</>}</p>
             </Card>
             <p>VS</p>
             <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">Black</CardTitle>
               </CardHeader>
-              <p>{mycolor === 'b' ? (<>You</>) : (<>chessbro123</>)}</p>
+              <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
             </Card>
           </div>
         </>

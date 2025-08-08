@@ -11,13 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { pieceNameMap } from "@/constants/chess";
+import { pieceNameMap, board } from "@/constants/chess";
 import { Button } from "@/components/ui/button";
 
 type ChessBoardProps = {
-  board: (any | null)[][];
-  playerColor?: "w" | "b";
-  turn?: "white" | "black";
+  board: board;
+  playerColor: "w" | "b";
+  turn: "w" | "b";
   onMove?: (
     from: [number, number],
     to: [number, number],
@@ -28,13 +28,14 @@ type ChessBoardProps = {
 export default function ChessBoard({
   board,
   playerColor,
-  turn = "white",
+  turn = "w",
   onMove,
 }: ChessBoardProps) {
-  const [clickedCells, setClickedCells] = useState<Array<[number, number]>>([]);
+  const [selectedSquares, setSelectedSquares] = useState<Array<[number, number]>>([]);
   const [promotionModalOpen, setPromotionModalOpen] = useState(false);
 
-  // Refs for always-fresh state
+  // Refs for always-fresh state.
+  // This avoids stale values being used for move validation in the handleMove function.
   const boardRef = useRef(board);
   const turnRef = useRef(turn);
   const playerColorRef = useRef(playerColor);
@@ -66,13 +67,11 @@ export default function ChessBoard({
   const handleMove = useCallback(
     (from: [number, number], to: [number, number], promotion?: string) => {
       // clear UI click selection right away
-      setClickedCells([]);
+      setSelectedSquares([]);
 
       const board = boardRef.current;
       const turn = turnRef.current;
       const mycolor = playerColorRef.current;
-
-      if (!mycolor) return;
 
       const piece = board[from[0]][from[1]];
       if (!piece || piece.color !== mycolor) {
@@ -80,8 +79,7 @@ export default function ChessBoard({
         return;
       }
 
-      const myTurn = mycolor === "w" ? "white" : "black";
-      if (turn !== myTurn) {
+      if (turn !== mycolor) {
         console.warn("It's not your turn!");
         return;
       }
@@ -91,10 +89,9 @@ export default function ChessBoard({
         (mycolor === "w" && from[0] === 1) ||
         (mycolor === "b" && from[0] === 6);
 
-      // Only open the modal if we *do not* already have a promotion piece selected.
       if (pieceToMoveIsPawn && pawnEligibleForPromotion && !promotion) {
         setPromotionModalOpen(true);
-        setClickedCells([from, to]); // store for the modal buttons to read
+        setSelectedSquares([from, to]); // store for the modal buttons to read
         return;
       }
 
@@ -118,19 +115,19 @@ export default function ChessBoard({
     (row: number, col: number) => {
       const [actualRow, actualCol] = mapCoords(row, col);
 
-      setClickedCells((prevClickedCells) => {
+      setSelectedSquares((prevSelectedSquares) => {
         if (
-          prevClickedCells.length === 0 &&
+          prevSelectedSquares.length === 0 &&
           board[actualRow][actualCol] != null &&
           board[actualRow][actualCol]?.color === playerColor
         ) {
           return [[actualRow, actualCol]];
-        } else if (prevClickedCells.length === 1) {
-          const newClicked = [...prevClickedCells, [actualRow, actualCol]] as [
+        } else if (prevSelectedSquares.length === 1) {
+          const newClicked = [...prevSelectedSquares, [actualRow, actualCol]] as [
             [number, number],
             [number, number]
           ];
-          handleMove(newClicked[0], newClicked[1]); // trigger move here
+          handleMove(newClicked[0], newClicked[1]);
           return [];
         } else {
           return [];
@@ -140,16 +137,18 @@ export default function ChessBoard({
     [board, playerColor, handleMove, mapCoords]
   );
 
-  const capitaliseFirstLetter = (str: string) => {
+  const getFullColorName = (str: string) => {
     if (!str) return "";
-    return str[0].toUpperCase() + str.slice(1);
+    if (str == "w") return "White";
+    if (str == "b") return "Black";
+    return;
   };
 
   return (
     <>
       <div className="text-center justify-center">
         <h1 className="text-2xl font-bold mb-4 flex justify-center">
-          {capitaliseFirstLetter(turn)}'s Turn
+          {getFullColorName(turn)}'s Turn
         </h1>
         <div className="flex justify-center items-center">
           <DndProvider backend={HTML5Backend}>
@@ -163,12 +162,12 @@ export default function ChessBoard({
                       piece={piece}
                       movePiece={handleMove}
                       clicked={
-                        clickedCells.length > 0 &&
-                        clickedCells[0][0] ===
+                        selectedSquares.length > 0 &&
+                        selectedSquares[0][0] ===
                           mapCoords(rowIndex, colIndex)[0] &&
-                        clickedCells[0][1] === mapCoords(rowIndex, colIndex)[1]
+                        selectedSquares[0][1] === mapCoords(rowIndex, colIndex)[1]
                       }
-                      setClicked={setClicked}
+                      setSelectedSquares={setClicked}
                       mapCoords={mapCoords}
                     />
                   ))}
@@ -193,7 +192,7 @@ export default function ChessBoard({
                   <Button
                     key={type}
                     onClick={() => {
-                      handlePromotion(clickedCells[0], clickedCells[1], type);
+                      handlePromotion(selectedSquares[0], selectedSquares[1], type);
                     }}
                     className={`bg-white ${
                       playerColor === "b"

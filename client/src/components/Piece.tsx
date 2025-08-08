@@ -2,13 +2,11 @@
 
 import { useDrag } from "react-dnd";
 import Image from "next/image";
-import { pieceNameMap } from "@/constants/chess";
+import { pieceNameMap, piece } from "@/constants/chess";
+import { useRef } from "react";
 
 type PieceProps = {
-  piece: {
-    type: string;
-    color: string;
-  };
+  piece: piece;
   position: [number, number];
 };
 
@@ -25,9 +23,13 @@ export default function Piece({ piece, position }: PieceProps) {
   const name = pieceNameMap[piece.type];
   const src = `/pieces/${color}${name}.png`;
 
+  // Pass Expected Type To Use-Ref Hook to Avoid TypeScript Error
+  const dragRef = useRef<HTMLDivElement>(null);
+  drag(dragRef);
+
   return (
     <div
-      ref={drag}
+      ref={dragRef}
       className={`w-full h-full flex items-center justify-center ${
         isDragging ? "opacity-50" : ""
       }`}
