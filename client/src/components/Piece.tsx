@@ -2,6 +2,7 @@
 
 import { useDrag } from "react-dnd";
 import Image from "next/image";
+import { pieceNameMap } from "@/constants/chess";
 
 type PieceProps = {
   piece: {
@@ -9,15 +10,6 @@ type PieceProps = {
     color: string;
   };
   position: [number, number];
-};
-
-const pieceNameMap: Record<string, string> = {
-  k: "King",
-  q: "Queen",
-  r: "Rook",
-  b: "Bishop",
-  n: "Knight",
-  p: "Pawn",
 };
 
 export default function Piece({ piece, position }: PieceProps) {

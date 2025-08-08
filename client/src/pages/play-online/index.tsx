@@ -6,13 +6,6 @@ import { useEffect, useState } from "react";
 import socket from "@/lib/socket";
 import { UUID } from "crypto";
 import ChessBoard from "@/components/ChessBoard";
-import Image from "next/image";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export default function PlayOnline() {
   const [matchingApponent, setMatchingOpponent] = useState(false);
@@ -20,16 +13,6 @@ export default function PlayOnline() {
   const [board, setBoard] = useState<(string | null)[][]>([]);
   const [turn, setTurn] = useState<"white" | "black">("white");
   const [mycolor, setMyColor] = useState<"w" | "b" | null>(null);
-  const [promotionModalOpen, setPromotionModalOpen] = useState(false);
-  const [clickedCells, setClickedCells] = useState<Array<[number, number]>>([]);
-
-  // Map for promotion piece type to piece name
-  const pieceNameMap: Record<string, string> = {
-    q: "Queen",
-    r: "Rook",
-    b: "Bishop",
-    n: "Knight",
-  };
 
   useEffect(() => {
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
@@ -73,22 +56,21 @@ export default function PlayOnline() {
     return files[col] + (8 - row);
   }
 
-  const handleMove = (from: [number, number], to: [number, number]) => {
+  const handleMove = (from: [number, number], to: [number, number], promotion: string) => {
     if (!gameid) return;
     // get current piece in the from position
-    const pieceToMoveIsPawn = board[from[0]][from[1]]?.type === "p";
-    const pawnEligibleForPromotion =
-      (mycolor === "w" && from[0] === 1) || (mycolor === "b" && from[0] === 6);
-    if (pieceToMoveIsPawn && pawnEligibleForPromotion) {
-      // Handle pawn promotion logic here
-      setPromotionModalOpen(true);
-      // Open Modal or similar to choose promotion piece
-      setClickedCells([from, to]);
+    if(promotion === ""){
+      socket.emit("makeMove", {
+        gameId: gameid,
+        from: toChessNotation(from),
+        to: toChessNotation(to),
+      });
     } else {
       socket.emit("makeMove", {
         gameId: gameid,
         from: toChessNotation(from),
         to: toChessNotation(to),
+        promotion: promotion,
       });
     }
   };
@@ -158,50 +140,6 @@ export default function PlayOnline() {
               <p>{mycolor === 'b' ? (<>You</>) : (<>chessbro123</>)}</p>
             </Card>
           </div>
-          {promotionModalOpen && (
-            <Dialog
-              open={promotionModalOpen}
-              onOpenChange={setPromotionModalOpen}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Promote Pawn</DialogTitle>
-                </DialogHeader>
-                <DialogContent>
-                  <p>Select a piece to promote your pawn:</p>
-                  <div className="flex justify-around mt-4">
-                    {["q", "r", "b", "n"].map((type) => (
-                      <Button
-                        key={type}
-                        onClick={() => {
-                          socket.emit("makeMove", {
-                            gameId: gameid,
-                            from: toChessNotation(clickedCells[0]),
-                            to: toChessNotation(clickedCells[1]),
-                            promotion: type,
-                          });
-                          setPromotionModalOpen(false);
-                        }}
-                        className={`bg-white ${
-                          mycolor === "b"
-                            ? "hover:bg-gray-300"
-                            : "hover:bg-gray-100"
-                        }`}
-                      >
-                        <Image
-                          src={`/pieces/${mycolor === 'w' ? "white" : "black"}${pieceNameMap[type]}.png`}
-                          alt={`${type} piece`}
-                          className="w-9 h-9"
-                          width={100}
-                          height={100}
-                        />
-                      </Button>
-                    ))}
-                  </div>
-                </DialogContent>
-              </DialogContent>
-            </Dialog>
-          )}
         </>
       )}
     </>
