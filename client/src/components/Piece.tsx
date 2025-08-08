@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useDrag } from 'react-dnd';
-import Image from 'next/image';
+import { useDrag } from "react-dnd";
+import Image from "next/image";
 
 type PieceProps = {
   piece: {
@@ -20,10 +20,9 @@ const pieceNameMap: Record<string, string> = {
   p: "Pawn",
 };
 
-
 export default function Piece({ piece, position }: PieceProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'piece',
+    type: "piece",
     item: { position },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -34,12 +33,11 @@ export default function Piece({ piece, position }: PieceProps) {
   const name = pieceNameMap[piece.type];
   const src = `/pieces/${color}${name}.png`;
 
-
   return (
     <div
       ref={drag}
       className={`w-full h-full flex items-center justify-center ${
-        isDragging ? 'opacity-50' : ''
+        isDragging ? "opacity-50" : ""
       }`}
     >
       <Image
