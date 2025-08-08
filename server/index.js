@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
   //   console.log(`Single player game started with ID ${gameId} for player ${socket.id}`);
   // });
 
-  socket.on('makeMove', ({gameId, from, to}) => {
+  socket.on('makeMove', ({gameId, from, to, promotion}) => {
     const gameObj = games.get(gameId);
     if (!gameObj) return;
     try {
@@ -76,7 +76,7 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'It is not your turn' });
         return;
       }
-      const move = gameObj.game.move({ from, to });
+      const move = gameObj.game.move({ from, to, promotion });
       if (move) {
         io.to(gameId).emit('gameState', { board: gameObj.game.board(), turn: gameObj.game.turn() });
       } else {

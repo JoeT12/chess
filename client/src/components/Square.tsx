@@ -1,19 +1,15 @@
-'use client';
+"use client";
 
 import { useDrop } from "react-dnd";
 import Piece from "./Piece";
-
-type PieceType = {
-  type: string;
-  color: string;
-};
+import { piece } from "@/constants/chess";
 
 interface SquareProps {
   position: [number, number]; // [row, col] on the displayed board
-  piece: PieceType | null | undefined;
+  piece: piece | null;
   movePiece: (from: [number, number], to: [number, number]) => void;
   clicked?: boolean;
-  setClicked: (row: number, col: number) => void;
+  setSelectedSquares: (row: number, col: number) => void;
   mapCoords: (row: number, col: number) => [number, number];
 }
 
@@ -22,8 +18,8 @@ export default function Square({
   piece,
   movePiece,
   clicked,
-  setClicked,
-  mapCoords, // <-- make sure this is here!
+  setSelectedSquares,
+  mapCoords,
 }: SquareProps) {
   const [row, col] = position;
   const isDark = (row + col) % 2 === 1;
@@ -37,14 +33,15 @@ export default function Square({
     },
   }));
 
-  const isValidPiece = piece && typeof piece.type === "string" && typeof piece.color === "string";
+  const isValidPiece =
+    piece && typeof piece.type === "string" && typeof piece.color === "string";
 
   return drop(
     <div
       className={`w-16 h-16 relative flex items-center justify-center ${
         clicked ? "bg-red-500" : isDark ? "bg-green-700" : "bg-green-100"
       }`}
-      onClick={() => setClicked(row, col)}
+      onClick={() => setSelectedSquares(row, col)}
     >
       {isValidPiece && <Piece piece={piece} position={position} />}
     </div>

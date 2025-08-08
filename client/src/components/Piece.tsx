@@ -1,29 +1,18 @@
-'use client';
+"use client";
 
-import { useDrag } from 'react-dnd';
-import Image from 'next/image';
+import { useDrag } from "react-dnd";
+import Image from "next/image";
+import { pieceNameMap, piece } from "@/constants/chess";
+import { useRef } from "react";
 
 type PieceProps = {
-  piece: {
-    type: string;
-    color: string;
-  };
+  piece: piece;
   position: [number, number];
 };
 
-const pieceNameMap: Record<string, string> = {
-  k: "King",
-  q: "Queen",
-  r: "Rook",
-  b: "Bishop",
-  n: "Knight",
-  p: "Pawn",
-};
-
-
 export default function Piece({ piece, position }: PieceProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'piece',
+    type: "piece",
     item: { position },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -34,12 +23,15 @@ export default function Piece({ piece, position }: PieceProps) {
   const name = pieceNameMap[piece.type];
   const src = `/pieces/${color}${name}.png`;
 
+  // Pass Expected Type To Use-Ref Hook to Avoid TypeScript Error
+  const dragRef = useRef<HTMLDivElement>(null);
+  drag(dragRef);
 
   return (
     <div
-      ref={drag}
+      ref={dragRef}
       className={`w-full h-full flex items-center justify-center ${
-        isDragging ? 'opacity-50' : ''
+        isDragging ? "opacity-50" : ""
       }`}
     >
       <Image

@@ -6,63 +6,77 @@ import { useEffect, useState } from "react";
 import socket from "@/lib/socket";
 import { UUID } from "crypto";
 import ChessBoard from "@/components/ChessBoard";
+import { board } from "@/constants/chess";
 
 export default function PlayOnline() {
   const [matchingApponent, setMatchingOpponent] = useState(false);
   const [gameid, setGameId] = useState<UUID | null>(null);
-  const [board, setBoard] = useState<(string | null)[][]>([]);
-  const [turn, setTurn] = useState<'white' | 'black'>('white');
-  const [mycolor, setMyColor] = useState<'w' | 'b' | null>(null);
+
+  const [board, setBoard] = useState<board>([]);
+  const [activeColor, setActiveColor] = useState<"w" | "b">("w");
+  const [localPlayerColor, setLocalPlayerColor] = useState<"w" | "b">("w");
+
+  useEffect(() => {
+    socket.on("gameStart", ({ gameId, board, turn, white }) => {
+      setMatchingOpponent(false);
+      setGameId(gameId);
+      setBoard(board);
+      setActiveColor(turn);
+
+      // Interpret the turn to get our color
+      if (socket.id === white) {
+        setLocalPlayerColor("w");
+      } else {
+        setLocalPlayerColor("b");
+      }
+    });
+
+    socket.on("gameState", ({ board, turn }) => {
+      setBoard(board);
+      setActiveColor(turn);
+    });
+
+    return () => {
+      // Player has navigated away from page...
+      // Clean up socket listeners
+      socket.off("findMultiplayerGame");
+      socket.off("gameState");
+      // Emit signal to server to end game with forfeit
+    };
+  }, []);
 
   const handleFindOpponent = () => {
     setMatchingOpponent(true);
     socket.emit("findMultiplayerGame");
   };
 
-  useEffect(() => {
-    socket.on('gameStart', ({ gameId, board, turn, white }) => {
-      setMatchingOpponent(false);
-      setGameId(gameId);
-      setBoard(board);
-      setTurn(turn === 'w' ? 'white' : 'black');
-
-      // Interpret the turn to get our color
-      if(socket.id === white) {
-        setMyColor('w');
-      }
-      else {
-        setMyColor('b');
-      }
-    });
-
-    socket.on('gameState', ({ board, turn }) => {
-      setBoard(board);
-      setTurn(turn === 'w' ? 'white' : 'black');
-    });
-
-    return () => {
-      // Player has navigated away from page...
-      // Clean up socket listeners
-      socket.off('findMultiplayerGame');
-      socket.off('gameState');
-      // Emit signal to server to end game with forfeit
-      
-    };
-  }, []);
-
   // Convert board coordinates to chess notation
   function toChessNotation([row, col]: [number, number]) {
-    const files = 'abcdefgh';
+    const files = "abcdefgh";
     return files[col] + (8 - row);
   }
 
-  const handleMove = (from: [number, number], to: [number, number]) => {
+  const handleMove = (
+    from: [number, number],
+    to: [number, number],
+    promotion: string
+  ) => {
     if (!gameid) return;
-    socket.emit('makeMove', {
-      gameId: gameid,
-      from: toChessNotation(from),
-      to: toChessNotation(to),
-    });
+    // get current piece in the from position
+    if (promotion === "") {
+      socket.emit("makeMove", {
+        gameId: gameid,
+        from: toChessNotation(from),
+        to: toChessNotation(to),
+      });
+    } else {
+      socket.emit("makeMove", {
+        gameId: gameid,
+        from: toChessNotation(from),
+        to: toChessNotation(to),
+        promotion: promotion,
+      });
+    }
   };
 
   return (
@@ -107,8 +121,28 @@ export default function PlayOnline() {
         </>
       ) : (
         <>
-          <p>You are {mycolor}</p>
-          <ChessBoard board={board} playerColor={mycolor} turn={turn} onMove={handleMove} />
+          <ChessBoard
+            board={board}
+            playerColor={localPlayerColor}
+            turn={activeColor}
+            onMove={handleMove}
+          />
+          <br />
+          <div className="flex flex-row gap-4 justify-center items-center mt-4">
+            <Card className="w-25 max-w-sm text-center p-2">
+              <CardHeader className="flex justify-center">
+                <CardTitle className="text-center">White</CardTitle>
+              </CardHeader>
+              <p>{localPlayerColor === "w" ? <>You</> : <>chessbro123</>}</p>
+            </Card>
+            <p>VS</p>
+            <Card className="w-25 max-w-sm text-center p-2">
+              <CardHeader className="flex justify-center">
+                <CardTitle className="text-center">Black</CardTitle>
+              </CardHeader>
+              <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
+            </Card>
+          </div>
         </>
       )}
     </>
