@@ -23,8 +23,10 @@ export default function PlayOnline() {
   const [activeColor, setActiveColor] = useState<"w" | "b">("w");
   const [localPlayerColor, setLocalPlayerColor] = useState<"w" | "b">("w");
 
-  const [winner, setWinner] = useState<String>("w");
-  const [gameOverModalOpen, setGameOverModalOpen] = useState(true);
+  const [gameInCheck, setGameInCheck] = useState(false);
+  const [winner, setWinner] = useState<String>("");
+  const [gameOverReason, setGameOverReason] = useState<String>("");
+  const [gameOverModalOpen, setGameOverModalOpen] = useState(false);
 
   useEffect(() => {
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
@@ -41,14 +43,22 @@ export default function PlayOnline() {
       }
     });
 
-    socket.on("gameState", ({ board, turn, gameOver }) => {
+    socket.on("gameState", ({ board, turn, gameOver, gameEndReason, inCheck }) => {
       setBoard(board);
       setActiveColor(turn);
+      if (inCheck) {
+        // Handle check state
+        console.log("Check!");
+        setGameInCheck(true);
+      } else {
+        setGameInCheck(false);
+      }
       // Check if the game is over after receiving the latest game state
       if (gameOver) {
         // On a win, the winner is opposite of the current turn
         // If it's white's turn, black won and vice versa
         setWinner(turn === "w" ? "b" : "w");
+        setGameOverReason(gameEndReason);
         setGameOverModalOpen(true);
       }
     });
@@ -138,14 +148,6 @@ export default function PlayOnline() {
         </>
       ) : (
         <>
-          <ChessBoard
-            board={board}
-            playerColor={localPlayerColor}
-            turn={activeColor}
-            onMove={handleMove}
-            disabled={winner !== ""}
-          />
-          <br />
           <div className="flex flex-row gap-4 justify-center items-center mt-4">
             <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
@@ -153,7 +155,13 @@ export default function PlayOnline() {
               </CardHeader>
               <p>{localPlayerColor === "w" ? <>You</> : <>chessbro123</>}</p>
             </Card>
-            <p>VS</p>
+            <ChessBoard
+              board={board}
+              playerColor={localPlayerColor}
+              turn={activeColor}
+              onMove={handleMove}
+              disabled={winner !== "" || gameOverReason === "draw"}
+            />
             <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">Black</CardTitle>
@@ -161,20 +169,27 @@ export default function PlayOnline() {
               <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
             </Card>
           </div>
+          {gameInCheck && (
+            <>
+              <br />
+              <p className="text-center">CHECK!</p>
+            </>
+          )}
 
           {gameOverModalOpen && (
             <>
-              <Dialog
-                open={gameOverModalOpen}
-                onOpenChange={() => {}}
-              >
+              <Dialog open={gameOverModalOpen} onOpenChange={() => {}}>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle className="text-center">
                       Game Over!
                     </DialogTitle>
                     <DialogDescription className="text-center">
-                      {winner === localPlayerColor ? "You Won!" : "You Lost!"}
+                      {gameOverReason === "draw"
+                        ? "It's a draw!"
+                        : winner === localPlayerColor
+                        ? `You won by ${gameOverReason}!`
+                        : `You lost by ${gameOverReason}!`}
                     </DialogDescription>
                   </DialogHeader>
 
