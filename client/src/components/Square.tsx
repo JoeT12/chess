@@ -21,7 +21,7 @@ export default function Square({
   clicked,
   setSelectedSquares,
   mapCoords,
-  disabled = false
+  disabled = false,
 }: SquareProps) {
   const [row, col] = position;
   const isDark = (row + col) % 2 === 1;
@@ -41,12 +41,14 @@ export default function Square({
 
   return drop(
     <div
-      className={`w-16 h-16 relative flex items-center justify-center ${
+      className={`flex items-center justify-center aspect-square w-full h-full ${
         clicked ? "bg-red-500" : isDark ? "bg-green-700" : "bg-green-100"
       }`}
       onClick={() => setSelectedSquares(row, col)}
     >
-      {isValidPiece && <Piece piece={piece} position={position} disabled={disabled} />}
+      {isValidPiece && (
+        <Piece piece={piece} position={position} disabled={disabled} />
+      )}
     </div>
   );
 }

@@ -120,6 +120,25 @@ io.on("connection", (socket) => {
       socket.emit("error", { message: "Invalid move" });
     }
   });
+
+  socket.on("disconnect", () => {
+    console.log(`Player ${socket.id} disconnected`);
+    
+    // Remove player from queue
+    const index = playerQueue.findIndex((s) => s.id === socket.id);
+    if (index !== -1) {
+      playerQueue.splice(index, 1);
+    }
+
+    // Remove player from any game
+    for (const [gameId, gameObj] of games.entries()) {
+      if (gameObj.players.w === socket.id || gameObj.players.b === socket.id) {
+        games.delete(gameId);
+        io.to(gameId).emit("gameOver", { message: "Opponent disconnected" });
+        break;
+      }
+    }
+  });
 });
 
 server.listen(8081, () => {

@@ -2,7 +2,6 @@
 
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useCallback, useEffect, useRef, useState } from "react";
 import Square from "./Square";
 import Image from "next/image";
 import {
@@ -11,13 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { pieceNameMap, board } from "@/constants/chess";
+import { pieceNameMap, boardState, playerColor } from "@/constants/chess";
 import { Button } from "@/components/ui/button";
+import { useChessBoard } from "@/hooks/useChessBoard";
 
 type ChessBoardProps = {
-  board: board;
-  playerColor: "w" | "b";
-  turn: "w" | "b";
+  board: boardState;
+  playerColor: playerColor;
+  turn: playerColor;
   onMove?: (
     from: [number, number],
     to: [number, number],
@@ -26,160 +26,53 @@ type ChessBoardProps = {
   disabled?: boolean;
 };
 
-export default function ChessBoard({
-  board,
-  playerColor,
-  turn = "w",
-  onMove,
-  disabled
-}: ChessBoardProps) {
-  const [selectedSquares, setSelectedSquares] = useState<Array<[number, number]>>([]);
-  const [promotionModalOpen, setPromotionModalOpen] = useState(false);
+export default function ChessBoard(props: ChessBoardProps) {
+  const {
+    selectedSquares,
+    promotionModalOpen,
+    setPromotionModalOpen,
+    handlePromotion,
+    handleMove,
+    displayBoard,
+    mapCoords,
+    setClicked,
+  } = useChessBoard(props);
 
-  // Refs for always-fresh state.
-  // This avoids stale values being used for move validation in the handleMove function.
-  const boardRef = useRef(board);
-  const turnRef = useRef(turn);
-  const playerColorRef = useRef(playerColor);
-
-  useEffect(() => {
-    boardRef.current = board;
-  }, [board]);
-  useEffect(() => {
-    turnRef.current = turn;
-  }, [turn]);
-  useEffect(() => {
-    playerColorRef.current = playerColor;
-  }, [playerColor]);
-
-  // Reverse board for black
-  const displayBoard =
-    playerColor === "b"
-      ? [...board].reverse().map((row) => [...row].reverse())
-      : board;
-
-  // Map displayed coordinates to actual board coordinates
-  const mapCoords = (row: number, col: number): [number, number] => {
-    if (playerColor === "b") {
-      return [7 - row, 7 - col];
-    }
-    return [row, col];
-  };
-
-  const handleMove = useCallback(
-    (from: [number, number], to: [number, number], promotion?: string) => {
-      // clear UI click selection right away
-      setSelectedSquares([]);
-
-      const board = boardRef.current;
-      const turn = turnRef.current;
-      const mycolor = playerColorRef.current;
-
-      const piece = board[from[0]][from[1]];
-      if (!piece || piece.color !== mycolor) {
-        console.warn("You can only move your own pieces!");
-        return;
-      }
-
-      if (turn !== mycolor) {
-        console.warn("It's not your turn!");
-        return;
-      }
-
-      const pieceToMoveIsPawn = board[from[0]][from[1]]?.type === "p";
-      const pawnEligibleForPromotion =
-        (mycolor === "w" && from[0] === 1) ||
-        (mycolor === "b" && from[0] === 6);
-
-      if (pieceToMoveIsPawn && pawnEligibleForPromotion && !promotion) {
-        setPromotionModalOpen(true);
-        setSelectedSquares([from, to]); // store for the modal buttons to read
-        return;
-      }
-
-      if (onMove) {
-        onMove(from, to, promotion || "");
-      }
-    },
-    [onMove]
-  );
-
-  const handlePromotion = useCallback(
-    (from: [number, number], to: [number, number], promotion: string) => {
-      setPromotionModalOpen(false);
-      // route through local handleMove to ensure all checks are done.
-      handleMove(from, to, promotion);
-    },
-    [handleMove]
-  );
-
-  const setClicked = useCallback(
-    (row: number, col: number) => {
-      if (disabled) return;
-      const [actualRow, actualCol] = mapCoords(row, col);
-
-      setSelectedSquares((prevSelectedSquares) => {
-        if (
-          prevSelectedSquares.length === 0 &&
-          board[actualRow][actualCol] != null &&
-          board[actualRow][actualCol]?.color === playerColor
-        ) {
-          return [[actualRow, actualCol]];
-        } else if (prevSelectedSquares.length === 1) {
-          const newClicked = [...prevSelectedSquares, [actualRow, actualCol]] as [
-            [number, number],
-            [number, number]
-          ];
-          handleMove(newClicked[0], newClicked[1]);
-          return [];
-        } else {
-          return [];
-        }
-      });
-    },
-    [board, playerColor, handleMove, mapCoords]
-  );
-
-  const getFullColorName = (str: string) => {
-    if (!str) return "";
-    if (str == "w") return "White";
-    if (str == "b") return "Black";
-    return;
-  };
+  const getFullColorName = (str: string) =>
+    str === "w" ? "White" : str === "b" ? "Black" : "";
 
   return (
     <>
-      <div className="text-center justify-center">
+      <div className="flex flex-col items-center">
         <h1 className="text-2xl font-bold mb-4 flex justify-center">
-          {getFullColorName(turn)}'s Turn
+          {getFullColorName(props.turn)}'s Turn
         </h1>
-        <div className="flex justify-center items-center">
-          <DndProvider backend={HTML5Backend}>
-            <div className="inline-block border-4 border-black">
-              {displayBoard.map((row, rowIndex) => (
-                <div key={rowIndex} className="flex">
-                  {row.map((piece, colIndex) => (
-                    <Square
-                      key={`${rowIndex}-${colIndex}`}
-                      position={[rowIndex, colIndex]}
-                      piece={piece}
-                      movePiece={handleMove}
-                      clicked={
-                        selectedSquares.length > 0 &&
-                        selectedSquares[0][0] ===
-                          mapCoords(rowIndex, colIndex)[0] &&
-                        selectedSquares[0][1] === mapCoords(rowIndex, colIndex)[1]
-                      }
-                      setSelectedSquares={setClicked}
-                      mapCoords={mapCoords}
-                      disabled={disabled}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </DndProvider>
-        </div>
+        <DndProvider backend={HTML5Backend}>
+          <div className="grid grid-cols-8 aspect-square w-[min(85vw,85vh)] border-4 border-black">
+            {displayBoard.flat().map((piece, index) => {
+              const rowIndex = Math.floor(index / 8);
+              const colIndex = index % 8;
+
+              return (
+                <Square
+                  key={`${rowIndex}-${colIndex}`}
+                  position={[rowIndex, colIndex]}
+                  piece={piece}
+                  movePiece={handleMove}
+                  clicked={
+                    selectedSquares.length > 0 &&
+                    selectedSquares[0][0] ===
+                      mapCoords(rowIndex, colIndex)[0] &&
+                    selectedSquares[0][1] === mapCoords(rowIndex, colIndex)[1]
+                  }
+                  setSelectedSquares={setClicked}
+                  mapCoords={mapCoords}
+                  disabled={props.disabled}
+                />
+              );
+            })}
+          </div>
+        </DndProvider>
       </div>
 
       {promotionModalOpen && (
@@ -196,18 +89,22 @@ export default function ChessBoard({
                   <Button
                     key={type}
                     onClick={() => {
-                      handlePromotion(selectedSquares[0], selectedSquares[1], type);
+                      handlePromotion(
+                        selectedSquares[0],
+                        selectedSquares[1],
+                        type
+                      );
                     }}
                     className={`bg-white ${
-                      playerColor === "b"
+                      props.playerColor === "b"
                         ? "hover:bg-gray-300"
                         : "hover:bg-gray-100"
                     }`}
                   >
                     <Image
-                      src={`/pieces/${playerColor === "w" ? "white" : "black"}${
-                        pieceNameMap[type]
-                      }.png`}
+                      src={`/pieces/${
+                        props.playerColor === "w" ? "white" : "black"
+                      }${pieceNameMap[type]}.png`}
                       alt={`${type} piece`}
                       className="w-9 h-9"
                       width={100}

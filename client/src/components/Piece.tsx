@@ -45,6 +45,7 @@ export default function Piece({
         alt={`${piece.color} ${piece.type}`}
         width={50}
         height={50}
+        className="w-[75%] h-[75%]"
       />
     </div>
   );
