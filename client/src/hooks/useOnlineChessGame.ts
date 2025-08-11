@@ -16,6 +16,8 @@ export function useOnlineChessGame() {
   const { isOpen, message, openModal, closeModal } = useGameOverModal();
 
   useEffect(() => {
+    const moveSound = new Audio("/move.wav");
+
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
       setMatchingOpponent(false);
       setGameId(gameId);
@@ -31,6 +33,7 @@ export function useOnlineChessGame() {
       "gameState",
       ({ board, turn, gameOver, gameEndReason, inCheck }) => {
         setBoard(board);
+        moveSound.play();
         setActiveColor(turn);
         if (inCheck) toast.info("Check!");
         if (gameOver) {
