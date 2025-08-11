@@ -54,12 +54,11 @@ export function useOnlineChessGame() {
     });
 
     return () => {
-      socket.emit("disconnect");
       socket.off("findMultiplayerGame");
       socket.off("gameState");
       socket.off("gameOver");
     };
-  }, []);
+  }, [gameId]);
 
   function findOpponent() {
     setMatchingOpponent(true);
