@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { useRouter } from "next/router";
 import { AppProps } from "next/app";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -65,6 +66,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                 </Breadcrumb>
               </div>
               <Component {...pageProps} />
+              <Toaster richColors position="top-right" />
             </main>
           </div>
         </div>

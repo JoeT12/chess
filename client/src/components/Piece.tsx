@@ -8,12 +8,18 @@ import { useRef } from "react";
 type PieceProps = {
   piece: piece;
   position: [number, number];
+  disabled?: boolean;
 };
 
-export default function Piece({ piece, position }: PieceProps) {
+export default function Piece({
+  piece,
+  position,
+  disabled = false,
+}: PieceProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "piece",
     item: { position },
+    canDrag: !disabled,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -39,6 +45,7 @@ export default function Piece({ piece, position }: PieceProps) {
         alt={`${piece.color} ${piece.type}`}
         width={50}
         height={50}
+        className="w-[75%] h-[75%]"
       />
     </div>
   );

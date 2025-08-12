@@ -2,86 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import socket from "@/lib/socket";
-import { UUID } from "crypto";
 import ChessBoard from "@/components/ChessBoard";
-import { board } from "@/constants/chess";
+import GameOverModal from "@/components/GameOverModal";
+import { useOnlineChessGame } from "@/hooks/useOnlineChessGame";
 
 export default function PlayOnline() {
-  const [matchingApponent, setMatchingOpponent] = useState(false);
-  const [gameid, setGameId] = useState<UUID | null>(null);
-
-  const [board, setBoard] = useState<board>([]);
-  const [activeColor, setActiveColor] = useState<"w" | "b">("w");
-  const [localPlayerColor, setLocalPlayerColor] = useState<"w" | "b">("w");
-
-  useEffect(() => {
-    socket.on("gameStart", ({ gameId, board, turn, white }) => {
-      setMatchingOpponent(false);
-      setGameId(gameId);
-      setBoard(board);
-      setActiveColor(turn);
-
-      // Interpret the turn to get our color
-      if (socket.id === white) {
-        setLocalPlayerColor("w");
-      } else {
-        setLocalPlayerColor("b");
-      }
-    });
-
-    socket.on("gameState", ({ board, turn }) => {
-      setBoard(board);
-      setActiveColor(turn);
-    });
-
-    return () => {
-      // Player has navigated away from page...
-      // Clean up socket listeners
-      socket.off("findMultiplayerGame");
-      socket.off("gameState");
-      // Emit signal to server to end game with forfeit
-    };
-  }, []);
-
-  const handleFindOpponent = () => {
-    setMatchingOpponent(true);
-    socket.emit("findMultiplayerGame");
-  };
-
-  // Convert board coordinates to chess notation
-  function toChessNotation([row, col]: [number, number]) {
-    const files = "abcdefgh";
-    return files[col] + (8 - row);
-  }
-
-  const handleMove = (
-    from: [number, number],
-    to: [number, number],
-    promotion: string
-  ) => {
-    if (!gameid) return;
-    // get current piece in the from position
-    if (promotion === "") {
-      socket.emit("makeMove", {
-        gameId: gameid,
-        from: toChessNotation(from),
-        to: toChessNotation(to),
-      });
-    } else {
-      socket.emit("makeMove", {
-        gameId: gameid,
-        from: toChessNotation(from),
-        to: toChessNotation(to),
-        promotion: promotion,
-      });
-    }
-  };
+  const {
+    matchingOpponent,
+    gameId,
+    board,
+    activeColor,
+    localPlayerColor,
+    isOpen,
+    message,
+    findOpponent,
+    makeMove,
+    resetGame,
+  } = useOnlineChessGame();
 
   return (
     <>
-      {gameid === null ? (
+      {gameId === null ? (
         <>
           <div className="fixed top-0 left-0 w-full h-full -z-10 bg-[url('/Background.png')] bg-cover bg-center" />
           <div className="flex flex-col justify-center items-center min-h-full py-8">
@@ -94,7 +35,7 @@ export default function PlayOnline() {
                 </CardTitle>
               </CardHeader>
 
-              {!matchingApponent ? (
+              {!matchingOpponent ? (
                 <CardContent>
                   <p className="leading-7 [&:not(:first-child)]:mt-6 text-center">
                     To get matched with an opponent, please click on the button
@@ -103,7 +44,7 @@ export default function PlayOnline() {
                   <Button
                     className="w-full bg-chessGreen text-white py-2 mb-3 rounded-md mt-4"
                     onClick={() => {
-                      handleFindOpponent();
+                      findOpponent();
                     }}
                   >
                     Find Opponent
@@ -121,28 +62,34 @@ export default function PlayOnline() {
         </>
       ) : (
         <>
-          <ChessBoard
-            board={board}
-            playerColor={localPlayerColor}
-            turn={activeColor}
-            onMove={handleMove}
-          />
-          <br />
           <div className="flex flex-row gap-4 justify-center items-center mt-4">
-            <Card className="w-25 max-w-sm text-center p-2">
+            {/* <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">White</CardTitle>
               </CardHeader>
               <p>{localPlayerColor === "w" ? <>You</> : <>chessbro123</>}</p>
-            </Card>
-            <p>VS</p>
-            <Card className="w-25 max-w-sm text-center p-2">
+            </Card> */}
+            <ChessBoard
+              board={board}
+              playerColor={localPlayerColor}
+              turn={activeColor}
+              onMove={makeMove}
+              disabled={false} // No need to disable board - as game end modal blocks interaction.
+            />
+            {/* <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">Black</CardTitle>
               </CardHeader>
               <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
-            </Card>
+            </Card> */}
           </div>
+
+          <GameOverModal
+            isOpen={isOpen}
+            message={message}
+            onClose={() => {}}
+            onClick={resetGame}
+          />
         </>
       )}
     </>

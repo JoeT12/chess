@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const http = require("http");
-const { Server } = require('socket.io');
-const { Chess } = require('chess.js');
+const { Server } = require("socket.io");
+const { Chess } = require("chess.js");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
@@ -14,7 +14,7 @@ const io = new Server(server, {
 const games = new Map();
 const playerQueue = [];
 
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   socket.on("findMultiplayerGame", () => {
     console.log(`Player ${socket.id} is looking for a game`);
     playerQueue.push(socket);
@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
 
       games.set(gameId, {
         game: chess,
-        players: {'w' : player1.id, 'b' : player2.id},
+        players: { w: player1.id, b: player2.id },
       });
 
       // Join Socket.IO room
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
 
       console.log(`Game ${gameId} started with ${player1.id} vs ${player2.id}`);
     }
-    });
+  });
 
   // socket.on("startSinglePlayerGame", () => {
   //   const gameId = uuidv4();
@@ -67,29 +67,80 @@ io.on('connection', (socket) => {
   //   console.log(`Single player game started with ID ${gameId} for player ${socket.id}`);
   // });
 
-  socket.on('makeMove', ({gameId, from, to, promotion}) => {
+  socket.on("makeMove", ({ gameId, from, to, promotion }) => {
     const gameObj = games.get(gameId);
     if (!gameObj) return;
+
+    const game = gameObj.game;
+
     try {
-      // Ensure that the correct player is making the move
-      if (gameObj.players[gameObj.game.turn()] !== socket.id) {
-        socket.emit('error', { message: 'It is not your turn' });
+      // Ensure correct player turn
+      if (gameObj.players[game.turn()] !== socket.id) {
+        socket.emit("error", { message: "It is not your turn" });
         return;
       }
-      const move = gameObj.game.move({ from, to, promotion });
-      if (move) {
-        io.to(gameId).emit('gameState', { board: gameObj.game.board(), turn: gameObj.game.turn() });
-      } else {
-        socket.emit('invalidMove', { from, to });
-      }
-  } catch (error) {
-      console.error(`Error processing move: ${error.message}`);
-      socket.emit('error', { message: 'Invalid move' });
-  }
-});
 
+      const move = game.move({ from, to, promotion });
+
+      if (move) {
+        const board = game.board();
+        const turn = game.turn();
+        const gameOver = game.isGameOver();
+
+        let gameEndReason = "";
+
+        if (gameOver) {
+          if (game.isCheckmate()) {
+            gameEndReason = "checkmate";
+          } else if (game.isStalemate()) {
+            gameEndReason = "stalemate";
+          } else if (game.isThreefoldRepetition()) {
+            gameEndReason = "threefold repetition";
+          } else if (game.isInsufficientMaterial()) {
+            gameEndReason = "insufficient material";
+          } else if (game.IsDraw()) {
+            gameEndReason = "draw";
+          } else {
+            gameEndReason = "game over";
+          }
+        }
+
+        io.to(gameId).emit("gameState", {
+          board,
+          turn,
+          gameOver,
+          gameEndReason,
+          inCheck: game.inCheck(),
+        });
+      } else {
+        socket.emit("invalidMove", { from, to });
+      }
+    } catch (error) {
+      console.error(`Error processing move: ${error.message}`);
+      socket.emit("error", { message: "Invalid move" });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Player ${socket.id} disconnected`);
+    
+    // Remove player from queue
+    const index = playerQueue.findIndex((s) => s.id === socket.id);
+    if (index !== -1) {
+      playerQueue.splice(index, 1);
+    }
+
+    // Remove player from any game
+    for (const [gameId, gameObj] of games.entries()) {
+      if (gameObj.players.w === socket.id || gameObj.players.b === socket.id) {
+        games.delete(gameId);
+        io.to(gameId).emit("gameOver", { message: "Opponent disconnected" });
+        break;
+      }
+    }
+  });
 });
 
 server.listen(8081, () => {
-  console.log('server running at http://localhost:8081');
+  console.log("server running at http://localhost:8081");
 });

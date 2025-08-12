@@ -7,10 +7,12 @@ export const pieceNameMap: Record<string, string> = {
   p: "Pawn",
 };
 
+export type playerColor = "w" | "b";
+
 export type piece = {
   type: string;
-  color: "w" | "b";
+  color: playerColor;
   square: string;
 };
 
-export type board = (piece | null)[][];
+export type boardState = (piece | null)[][];
