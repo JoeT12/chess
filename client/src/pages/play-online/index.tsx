@@ -63,12 +63,12 @@ export default function PlayOnline() {
       ) : (
         <>
           <div className="flex flex-row gap-4 justify-center items-center mt-4">
-            <Card className="w-25 max-w-sm text-center p-2">
+            {/* <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">White</CardTitle>
               </CardHeader>
               <p>{localPlayerColor === "w" ? <>You</> : <>chessbro123</>}</p>
-            </Card>
+            </Card> */}
             <ChessBoard
               board={board}
               playerColor={localPlayerColor}
@@ -76,12 +76,12 @@ export default function PlayOnline() {
               onMove={makeMove}
               disabled={false} // No need to disable board - as game end modal blocks interaction.
             />
-            <Card className="w-25 max-w-sm text-center p-2">
+            {/* <Card className="w-25 max-w-sm text-center p-2">
               <CardHeader className="flex justify-center">
                 <CardTitle className="text-center">Black</CardTitle>
               </CardHeader>
               <p>{localPlayerColor === "b" ? <>You</> : <>chessbro123</>}</p>
-            </Card>
+            </Card> */}
           </div>
 
           <GameOverModal

@@ -43,8 +43,8 @@ export default function ChessBoard(props: ChessBoardProps) {
 
   return (
     <>
-      <div className="flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-4 flex justify-center">
+      <div className="flex flex-col items-center w-full h-full">
+        <h1 className="font-bold mb-2 flex justify-center text-[min(3vw,3vh)]">
           {getFullColorName(props.turn)}'s Turn
         </h1>
         <DndProvider backend={HTML5Backend}>
