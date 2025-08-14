@@ -5,7 +5,7 @@ import { useGameOverModal } from "./useGameOverModal";
 import { UUID } from "crypto";
 import { boardState, playerColor } from "@/constants/chess";
 
-export function useOnlineChessGame() {
+export function useOnlineChessGame(mode: string) {
   const [matchingOpponent, setMatchingOpponent] = useState(false);
   const [gameId, setGameId] = useState<UUID | null>(null);
   const [board, setBoard] = useState<boardState>([]);
@@ -51,13 +51,13 @@ export function useOnlineChessGame() {
     });
 
     socket.on("gameOver", () => {
-      socket.off("findMultiplayerGame");
+      socket.off("findGame");
       socket.off("gameState");
       openModal("forefit", playerColorRef.current, playerColorRef.current);
     });
 
     return () => {
-      socket.off("findMultiplayerGame");
+      socket.off("findGame");
       socket.off("gameState");
       socket.off("gameOver");
     };
@@ -65,7 +65,11 @@ export function useOnlineChessGame() {
 
   function findOpponent() {
     setMatchingOpponent(true);
-    socket.emit("findMultiplayerGame");
+    if(mode === "single-player") {
+      socket.emit("findGame", {multiPlayer: false});
+    } else {
+      socket.emit("findGame", {multiPlayer: true});
+    }
   }
 
   function makeMove(

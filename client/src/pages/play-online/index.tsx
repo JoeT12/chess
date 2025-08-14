@@ -18,7 +18,7 @@ export default function PlayOnline() {
     findOpponent,
     makeMove,
     resetGame,
-  } = useOnlineChessGame();
+  } = useOnlineChessGame("multiplayer");
 
   return (
     <>
