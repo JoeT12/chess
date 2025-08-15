@@ -1,7 +1,7 @@
-const Engine = require('./engine');
+import Engine from "./engineService.js";
 
-class EnginePool {
-  constructor(size = 2, path = 'stockfish') {
+export default class EnginePool {
+  constructor(size = 2, path = "stockfish") {
     this.pool = Array.from({ length: size }, () => new Engine(path));
     this.nextIndex = 0;
   }
@@ -18,8 +18,6 @@ class EnginePool {
   }
 
   quitAll() {
-    this.pool.forEach(e => e.quit());
+    this.pool.forEach((e) => e.quit());
   }
 }
-
-module.exports = EnginePool;
