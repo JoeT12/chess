@@ -65,10 +65,10 @@ export function useOnlineChessGame(mode: string) {
 
   function findOpponent() {
     setMatchingOpponent(true);
-    if(mode === "single-player") {
-      socket.emit("findGame", {multiPlayer: false});
+    if (mode === "single-player") {
+      socket.emit("findGame", { multiPlayer: false, difficulty: "easy" });
     } else {
-      socket.emit("findGame", {multiPlayer: true});
+      socket.emit("findGame", { multiPlayer: true });
     }
   }
 

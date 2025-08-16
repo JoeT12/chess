@@ -26,11 +26,12 @@ export default class Engine {
     this.process.stdin.write(cmd + "\n");
   }
 
-  getBestMove(fen, depth = 15) {
+  getBestMove(fen, AIConfig) {
     return new Promise((resolve) => {
       this.queue.push({ resolve });
+      this.send(`setoption name Skill Level value ${AIConfig.skill}`);
       this.send(`position fen ${fen}`);
-      this.send(`go depth ${depth}`);
+      this.send(`go depth ${AIConfig.depth}`);
     });
   }
 

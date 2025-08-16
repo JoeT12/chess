@@ -12,9 +12,9 @@ export default class EnginePool {
     return engine;
   }
 
-  async getBestMove(fen, depth = 15) {
+  async getBestMove(fen, AIConfig) {
     const engine = this.getEngine();
-    return engine.getBestMove(fen, depth);
+    return engine.getBestMove(fen, AIConfig);
   }
 
   quitAll() {

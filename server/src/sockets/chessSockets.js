@@ -1,15 +1,46 @@
 import * as chessService from "../services/chessService.js";
 
 export function registerChessSockets(io, socket) {
-  socket.on("findGame", ({multiPlayer}) => {
+  socket.on("findGame", ({ multiPlayer, difficulty }) => {
     console.log(`Player ${socket.id} is looking for a game`);
-    const initialGameState = chessService.createGame(socket, multiPlayer);
-    io.to(initialGameState.gameId).emit("gameStart", initialGameState);
+    if (multiPlayer) {
+      const game = chessService.queuePlayer(socket.id);
+      if (game) {
+        const { gameId, white, black } = game;
+
+        const whiteSocket = io.sockets.sockets.get(white);
+        const blackSocket = io.sockets.sockets.get(black);
+
+        whiteSocket.join(gameId);
+        blackSocket.join(gameId);
+
+        console.log(
+          `Multi-player game ${gameId} started for ${whiteSocket} and ${blackSocket}`
+        );
+        io.to(gameId).emit("gameStart", game);
+      }
+    } else {
+      const game = chessService.createGame(
+        socket.id,
+        "engine",
+        "single-player",
+        difficulty
+      );
+      socket.join(game.gameId);
+      console.log(`Single-player game ${game.gameId} started for ${socket.id}`);
+      socket.emit("gameStart", game);
+    }
   });
 
   socket.on("makeMove", ({ gameId, from, to, promotion }) => {
     console.log(`Player ${socket.id} making move in game ${gameId}`);
-    const obj = chessService.makePlayerMove(socket, gameId, from, to, promotion);
+    const obj = chessService.makePlayerMove(
+      socket,
+      gameId,
+      from,
+      to,
+      promotion
+    );
     if (obj.error) {
       socket.emit("error", { message: obj.error });
     } else {

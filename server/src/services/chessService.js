@@ -2,58 +2,48 @@ import * as gameOverUtils from "../utils/gameOver.js";
 import { v4 as uuidv4 } from "uuid";
 import EnginePool from "./enginePoolService.js";
 import { Chess } from "chess.js";
-import { numChessEngines } from "../config/env.js";
+import { numChessEngines, easyAI, mediumAI, hardAI } from "../config/env.js";
 
 const enginePool = new EnginePool(numChessEngines, "stockfish");
+const AI_LEVELS = {
+  easy: easyAI,
+  medium: mediumAI,
+  hard: hardAI,
+};
 
 // Map of games, where the key is the game ID and the value is the game state
 const games = new Map();
 const playerQueue = [];
 
-export const createGame = (socket, multiPlayer = false) => {
-  const gameState = {};
-
-  const createAndStoreGame = (whitePlayer, blackPlayer, mode) => {
-    const gameId = uuidv4();
-    const chess = new Chess();
-
-    games.set(gameId, {
-      game: chess,
-      players: { w: whitePlayer, b: blackPlayer },
-      mode,
-    });
-
-    gameState.gameId = gameId;
-    gameState.board = chess.board();
-    gameState.turn = chess.turn();
-    gameState.white = whitePlayer;
-    gameState.black = blackPlayer;
-
-    return { gameId, chess };
-  };
-
-  if (multiPlayer) {
-    playerQueue.push(socket);
-
-    if (playerQueue.length >= 2) {
-      const [player1, player2] = playerQueue.splice(0, 2);
-      const { gameId } = createAndStoreGame(
-        player1.id,
-        player2.id,
-        "multiplayer"
-      );
-
-      player1.join(gameId);
-      player2.join(gameId);
-      console.log(`Game ${gameId} started with ${player1.id} vs ${player2.id}`);
-    }
-  } else {
-    const { gameId } = createAndStoreGame(socket.id, "engine", "single-player");
-    socket.join(gameId);
-    console.log(`Single-player game ${gameId} started for ${socket.id}`);
+export const queuePlayer = (playerId) => {
+  playerQueue.push(playerId);
+  if (playerQueue.length >= 2) {
+    const [p1, p2] = playerQueue.splice(0, 2);
+    return createGame(p1, p2, "multiplayer", null);
   }
+  return null;
+};
 
-  return gameState;
+export const createGame = (whitePlayer, blackPlayer, mode, difficulty) => {
+  const gameId = uuidv4();
+  const chess = new Chess();
+
+  const AIConfig = difficulty ? AI_LEVELS[difficulty] ?? null : null;
+
+  games.set(gameId, {
+    game: chess,
+    players: { w: whitePlayer, b: blackPlayer },
+    mode,
+    AIConfig: AIConfig,
+  });
+
+  return {
+    gameId,
+    board: chess.board(),
+    turn: chess.turn(),
+    white: whitePlayer,
+    black: blackPlayer,
+  };
 };
 
 export const makePlayerMove = (socket, gameId, from, to, promotion) => {
@@ -104,11 +94,10 @@ export const makeAIMove = async (gameId) => {
   const game = gameObj.game;
   if (game.isGameOver()) return;
 
-  const engine = enginePool.getEngine();
   const fen = game.fen();
 
   try {
-    const aiMove = await engine.getBestMove(fen, 10);
+    const aiMove = await enginePool.getBestMove(fen, gameObj.AIConfig);
     if (!aiMove) return;
 
     game.move(aiMove);
@@ -138,7 +127,6 @@ export const handleDisconnect = (socketId) => {
     if (gameObj.players.w === socketId || gameObj.players.b === socketId) {
       games.delete(gameId);
       return gameId;
-      break;
     }
   }
 };
@@ -147,4 +135,4 @@ export const shutDownEngines = () => {
   console.log("Teminated all engines...");
   enginePool.quitAll();
   console.log("All engines terminated successfully.");
-}
+};
