@@ -1,8 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { boardState } from "@/constants/chess";
-
-type PlayerColor = "w" | "b";
+import { boardState, playerColor } from "@/constants/chess";
 
 export function useChessBoard({
   board,
@@ -12,8 +10,8 @@ export function useChessBoard({
   disabled,
 }: {
   board: boardState;
-  playerColor: PlayerColor;
-  turn: PlayerColor;
+  playerColor: playerColor;
+  turn: playerColor;
   onMove?: (
     from: [number, number],
     to: [number, number],

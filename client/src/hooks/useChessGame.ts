@@ -5,12 +5,13 @@ import { useGameOverModal } from "./useGameOverModal";
 import { UUID } from "crypto";
 import { boardState, playerColor } from "@/constants/chess";
 
-export function useOnlineChessGame(mode: string) {
+export function useChessGame(mode: string) {
   const [matchingOpponent, setMatchingOpponent] = useState(false);
   const [gameId, setGameId] = useState<UUID | null>(null);
   const [board, setBoard] = useState<boardState>([]);
   const [activeColor, setActiveColor] = useState<playerColor>("w");
   const [localPlayerColor, setLocalPlayerColor] = useState<playerColor>("w");
+  const [AIDifficulty, setAIDifficulty] = useState<string>("easy");
 
   const playerColorRef = useRef<playerColor>("w");
   const { isOpen, message, openModal, closeModal } = useGameOverModal();
@@ -66,7 +67,7 @@ export function useOnlineChessGame(mode: string) {
   function findOpponent() {
     setMatchingOpponent(true);
     if (mode === "single-player") {
-      socket.emit("findGame", { multiPlayer: false, difficulty: "easy" });
+      socket.emit("findGame", { multiPlayer: false, difficulty: AIDifficulty });
     } else {
       socket.emit("findGame", { multiPlayer: true });
     }
@@ -105,6 +106,7 @@ export function useOnlineChessGame(mode: string) {
     findOpponent,
     makeMove,
     resetGame,
+    setAIDifficulty,
   };
 }
 

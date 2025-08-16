@@ -2,9 +2,27 @@
 
 import ChessBoard from "@/components/ChessBoard";
 import { Button } from "@/components/ui/button";
-import { useOnlineChessGame } from "@/hooks/useOnlineChessGame";
+import { useChessGame } from "@/hooks/useChessGame";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import GameOverModal from "@/components/GameOverModal";
+import ComboBox from "@/components/ComboBox";
+import { useComboBox } from "@/hooks/useComboBox";
+import { useEffect } from "react";
+
+const AI_OPTIONS = [
+  {
+    value: "easy",
+    label: "easy",
+  },
+  {
+    value: "medium",
+    label: "medium",
+  },
+  {
+    value: "hard",
+    label: "hard",
+  },
+];
 
 export default function Play() {
   const {
@@ -18,8 +36,14 @@ export default function Play() {
     findOpponent,
     makeMove,
     resetGame,
-  } = useOnlineChessGame("single-player");
+    setAIDifficulty,
+  } = useChessGame("single-player");
 
+  const { open, setOpen, value, setValue } = useComboBox();
+
+  useEffect(() => {
+    setAIDifficulty(value);
+  }, [value]);
 
   return gameId === null ? (
     <>
@@ -35,11 +59,20 @@ export default function Play() {
           </CardHeader>
 
           {!matchingOpponent ? (
-            <CardContent>
+            <CardContent className="text-center justify-center items-center">
               <p className="leading-7 [&:not(:first-child)]:mt-6 text-center">
-                To start a game against the engine, please click on the button
-                below.
+                To start a game against the engine, please select a difficulty
+                and then click on the button below.
               </p>
+              <br />
+              <ComboBox
+                options={AI_OPTIONS}
+                isOpen={open}
+                onClose={setOpen}
+                value={value}
+                setValue={setValue}
+              ></ComboBox>
+              <br />
               <Button
                 className="w-full bg-chessGreen text-white py-2 mb-3 rounded-md mt-4"
                 onClick={() => {
