@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const numChessEngines = process.env.NUM_ENGINES || 4;
+export const UIEndpoint = process.env.UI_ENDPOINT || "http://localhost:3000";
 
 export const easyAI = {
   skill: process.env.EASY_AI_SKILL || 5,

@@ -67,3 +67,11 @@ export function registerChessSockets(io, socket) {
     }
   });
 }
+
+export function closeAllChessSockets(io) {
+  console.log("Closing all open sockets...");
+  io.sockets.sockets.forEach((socket) => {
+    socket.disconnect(true);
+  });
+  console.log("All sockets closed successfully.");
+}

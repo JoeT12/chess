@@ -132,7 +132,7 @@ export const handleDisconnect = (socketId) => {
 };
 
 export const shutDownEngines = () => {
-  console.log("Teminated all engines...");
+  console.log("Teminating all engines...");
   enginePool.quitAll();
   console.log("All engines terminated successfully.");
 };

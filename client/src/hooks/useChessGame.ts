@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import socket from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
 import { toast } from "sonner";
 import { useGameOverModal } from "./useGameOverModal";
 import { UUID } from "crypto";
 import { boardState, playerColor } from "@/constants/chess";
+import isServerHealthy from "@/lib/api/serverHealth";
 
 export function useChessGame(mode: string) {
   const [matchingOpponent, setMatchingOpponent] = useState(false);
@@ -15,6 +16,7 @@ export function useChessGame(mode: string) {
 
   const playerColorRef = useRef<playerColor>("w");
   const { isOpen, message, openModal, closeModal } = useGameOverModal();
+  const socket = getSocket();
 
   useEffect(() => {
     const moveSound = new Audio("/move.wav");
@@ -57,20 +59,39 @@ export function useChessGame(mode: string) {
       openModal("forefit", playerColorRef.current, playerColorRef.current);
     });
 
+    socket.on("connect_error", (err) => {
+      toast.error("Unable to connect to game server. Please try again later.");
+      setMatchingOpponent(false);
+      socket.disconnect();
+    });
+
+    socket.on("disconnect", () => {
+      toast.error("Error: server disconnected.");
+      resetGame();
+    });
+
     return () => {
       socket.off("findGame");
       socket.off("gameState");
       socket.off("gameOver");
+      socket.off("connect_error");
+      socket.off("disconnect");
     };
   }, [gameId]);
 
-  function findOpponent() {
-    setMatchingOpponent(true);
-    if (mode === "single-player") {
-      socket.emit("findGame", { multiPlayer: false, difficulty: AIDifficulty });
-    } else {
-      socket.emit("findGame", { multiPlayer: true });
+  async function findOpponent() {
+    if (!(await isServerHealthy())) {
+      toast.error("Error: Unable to connect to server.");
+      return;
     }
+    if (!socket.connected) socket.connect();
+
+    setMatchingOpponent(true);
+    const payload =
+      mode === "single-player"
+        ? { multiPlayer: false, difficulty: AIDifficulty }
+        : { multiPlayer: true };
+    socket.emit("findGame", payload);
   }
 
   function makeMove(
