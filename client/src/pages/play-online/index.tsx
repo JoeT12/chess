@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import ChessBoard from "@/components/ChessBoard";
 import GameOverModal from "@/components/GameOverModal";
-import { useOnlineChessGame } from "@/hooks/useOnlineChessGame";
+import { useChessGame } from "@/hooks/useChessGame";
 
 export default function PlayOnline() {
   const {
@@ -18,7 +18,7 @@ export default function PlayOnline() {
     findOpponent,
     makeMove,
     resetGame,
-  } = useOnlineChessGame();
+  } = useChessGame("multiplayer");
 
   return (
     <>
