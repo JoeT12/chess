@@ -4,11 +4,14 @@ import {
 } from "./sockets/chessSockets.js";
 import { shutDownEngines } from "./services/chessService.js";
 import healthRoutes from "./routes/healthRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import express from "express";
 import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
 import { UIEndpoint } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const server = http.createServer(app);
@@ -24,7 +27,10 @@ app.use(
 );
 
 app.use(express.json());
+app.use(cookieParser()); // before your route
 app.use("/api/health", healthRoutes);
+app.use("/api/auth", authRoutes);
+app.use(errorHandler);
 
 io.on("connection", (socket) => {
   registerChessSockets(io, socket);
