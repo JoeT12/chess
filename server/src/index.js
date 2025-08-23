@@ -12,6 +12,7 @@ import { Server } from "socket.io";
 import { UIEndpoint } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
+import { authenticateSocket } from "./middleware/authentication.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,8 @@ app.use(
   cors({
     origin: UIEndpoint,
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -31,6 +34,10 @@ app.use(cookieParser()); // before your route
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use(errorHandler);
+
+io.use((socket, next) => {
+  authenticateSocket(socket, next);
+});
 
 io.on("connection", (socket) => {
   registerChessSockets(io, socket);

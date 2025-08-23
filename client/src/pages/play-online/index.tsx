@@ -5,8 +5,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import ChessBoard from "@/components/ChessBoard";
 import GameOverModal from "@/components/GameOverModal";
 import { useChessGame } from "@/hooks/useChessGame";
+import { useAuth } from "@/context/authContext";
 
 export default function PlayOnline() {
+  const { accessToken } = useAuth();
   const {
     matchingOpponent,
     gameId,
@@ -18,7 +20,7 @@ export default function PlayOnline() {
     findOpponent,
     makeMove,
     resetGame,
-  } = useChessGame("multiplayer");
+  } = useChessGame("multiplayer", accessToken);
 
   return (
     <>

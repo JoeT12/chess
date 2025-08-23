@@ -18,3 +18,18 @@ export const authenticateToken = catchAsync((req, res, next) => {
     next();
   });
 });
+
+export const authenticateSocket = catchAsync((socket, next) => {
+  const token = socket.handshake.query.token;
+  if (!token) return next(new Error("Authentication error"));
+
+  jwt.verify(token, JWTPrivateKey, (err, payload) => {
+    if (err) return next(new UnauthorizedError("Invalid token"));
+    socket.user = {
+      id: payload.id,
+      email: payload.user,
+      role: payload.role,
+    };
+    next();
+  });
+});

@@ -117,7 +117,7 @@ export const makeAIMove = async (gameId) => {
 };
 
 export const handleDisconnect = (socketId) => {
-  const index = playerQueue.findIndex((s) => s.id === socketId);
+  const index = playerQueue.findIndex((s) => s === socketId);
   if (index !== -1) {
     playerQueue.splice(index, 1);
   }

@@ -6,7 +6,7 @@ import { UUID } from "crypto";
 import { boardState, playerColor } from "@/constants/chess";
 import isServerHealthy from "@/lib/api/serverHealth";
 
-export function useChessGame(mode: string) {
+export function useChessGame(mode: string, accessToken: string | null) {
   const [matchingOpponent, setMatchingOpponent] = useState(false);
   const [gameId, setGameId] = useState<UUID | null>(null);
   const [board, setBoard] = useState<boardState>([]);
@@ -15,12 +15,19 @@ export function useChessGame(mode: string) {
   const [AIDifficulty, setAIDifficulty] = useState<string>("easy");
 
   const playerColorRef = useRef<playerColor>("w");
+  const socketRef = useRef<ReturnType<typeof getSocket> | null>(null);
   const { isOpen, message, openModal, closeModal } = useGameOverModal();
-  const socket = getSocket();
 
   useEffect(() => {
+    // Decide token for socket: single-player can be guest
+    if (!accessToken) return;
+
+    const socket = getSocket(accessToken);
+    socketRef.current = socket;
+
     const moveSound = new Audio("/move.wav");
 
+    // Event registration
     socket.on("gameStart", ({ gameId, board, turn, white }) => {
       setMatchingOpponent(false);
       setGameId(gameId);
@@ -49,17 +56,15 @@ export function useChessGame(mode: string) {
       }
     );
 
-    socket.on("error", (error) => {
-      toast.error(`Error: ${error.message}`);
-    });
-
     socket.on("gameOver", () => {
       socket.off("findGame");
       socket.off("gameState");
       openModal("forefit", playerColorRef.current, playerColorRef.current);
     });
 
-    socket.on("connect_error", (err) => {
+    socket.on("error", (error) => toast.error(`Error: ${error.message}`));
+
+    socket.on("connect_error", () => {
       toast.error("Unable to connect to game server. Please try again later.");
       setMatchingOpponent(false);
       socket.disconnect();
@@ -70,16 +75,22 @@ export function useChessGame(mode: string) {
       resetGame();
     });
 
+    // Cleanup on unmount
     return () => {
-      socket.off("findGame");
+      socket.off("gameStart");
       socket.off("gameState");
       socket.off("gameOver");
+      socket.off("error");
       socket.off("connect_error");
       socket.off("disconnect");
+      socket.disconnect();
     };
-  }, [gameId]);
+  }, [accessToken, mode]);
 
   async function findOpponent() {
+    const socket = socketRef.current;
+    if (!socket) return;
+
     if (!(await isServerHealthy())) {
       toast.error("Error: Unable to connect to server.");
       return;
@@ -99,7 +110,9 @@ export function useChessGame(mode: string) {
     to: [number, number],
     promotion?: string
   ) {
-    if (!gameId) return;
+    const socket = socketRef.current;
+    if (!socket || !gameId) return;
+
     socket.emit("makeMove", {
       gameId,
       from: toChessNotation(from),

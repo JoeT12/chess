@@ -8,6 +8,7 @@ import GameOverModal from "@/components/GameOverModal";
 import ComboBox from "@/components/ComboBox";
 import { useComboBox } from "@/hooks/useComboBox";
 import { useEffect } from "react";
+import { useAuth } from "@/context/authContext";
 
 const AI_OPTIONS = [
   {
@@ -25,6 +26,7 @@ const AI_OPTIONS = [
 ];
 
 export default function Play() {
+  const { accessToken } = useAuth();
   const {
     gameId,
     board,
@@ -37,7 +39,7 @@ export default function Play() {
     makeMove,
     resetGame,
     setAIDifficulty,
-  } = useChessGame("single-player");
+  } = useChessGame("single-player", accessToken);
 
   const { open, setOpen, value, setValue } = useComboBox();
 

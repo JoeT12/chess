@@ -1,11 +1,12 @@
 import { query } from "../db/index.js";
 
 export const userRepository = {
-  async insertUser(email, hashedPassword) {
-    return query("INSERT INTO users (email, password) VALUES ($1, $2)", [
-      email,
-      hashedPassword,
-    ]);
+  async insertUser(user, hashedPassword) {
+    const { email, firstName, lastName } = user;
+    return query(
+      "INSERT INTO users (email, first_name, last_name, password) VALUES ($1, $2, $3, $4)",
+      [email, firstName, lastName, hashedPassword]
+    );
   },
 
   async retrieveUser(email) {

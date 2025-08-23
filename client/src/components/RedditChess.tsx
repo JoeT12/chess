@@ -77,7 +77,8 @@ const RedditChess = () => {
                             </CardHeader>
                             <CardContent className="w-full p-6 max-w-full overflow-hidden">
                               <p className="break-words overflow-hidden max-w-full">
-                                {post?.content?.length > 200
+                                {post?.content?.length &&
+                                post.content.length > 200
                                   ? post.content
                                       ?.slice(0, 200)
                                       .replaceAll("\n", " ") +

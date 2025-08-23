@@ -17,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import FooterSection from "@/components/app-footer";
+import { AuthProvider } from "@/context/authContext";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -29,48 +30,50 @@ function MyApp({ Component, pageProps }: AppProps) {
       enableSystem
       disableTransitionOnChange
     >
-      <SidebarProvider>
-        <div className="flex flex-col min-h-screen overflow-x-hidden">
-          <div className="flex flex-1 w-full min-w-0">
-            <AppSidebar className="w-64 shrink-0" />
-            <main className="flex-1 p-2 w-full overflow-x-hidden">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    {pathSegments.map((segment, index) => {
-                      const href =
-                        "/" + pathSegments.slice(0, index + 1).join("/");
-                      const isLast = index === pathSegments.length - 1;
-                      return (
-                        <React.Fragment key={href}>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                            {isLast ? (
-                              <BreadcrumbPage>
-                                {decodeURIComponent(segment)}
-                              </BreadcrumbPage>
-                            ) : (
-                              <BreadcrumbLink href={href}>
-                                {decodeURIComponent(segment)}
-                              </BreadcrumbLink>
-                            )}
-                          </BreadcrumbItem>
-                        </React.Fragment>
-                      );
-                    })}
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
-              <Component {...pageProps} />
-              <Toaster richColors position="top-right" />
-            </main>
+      <AuthProvider>
+        <SidebarProvider>
+          <div className="flex flex-col min-h-screen overflow-x-hidden">
+            <div className="flex flex-1 w-full min-w-0">
+              <AppSidebar className="w-64 shrink-0" />
+              <main className="flex-1 p-2 w-full overflow-x-hidden">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {pathSegments.map((segment, index) => {
+                        const href =
+                          "/" + pathSegments.slice(0, index + 1).join("/");
+                        const isLast = index === pathSegments.length - 1;
+                        return (
+                          <React.Fragment key={href}>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                              {isLast ? (
+                                <BreadcrumbPage>
+                                  {decodeURIComponent(segment)}
+                                </BreadcrumbPage>
+                              ) : (
+                                <BreadcrumbLink href={href}>
+                                  {decodeURIComponent(segment)}
+                                </BreadcrumbLink>
+                              )}
+                            </BreadcrumbItem>
+                          </React.Fragment>
+                        );
+                      })}
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </div>
+                <Component {...pageProps} />
+                <Toaster richColors position="top-right" />
+              </main>
+            </div>
           </div>
-        </div>
-      </SidebarProvider>
+        </SidebarProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -37,6 +37,8 @@ export const up = (pgm) => {
         notNull: true,
         unique: true,
       },
+      first_name: { type: "varchar(100)", notNull:true},
+      last_name: {type: "varChar(100)", notNull:true},
       password: { type: "varchar(255)", notNull: true },
       role_id: {
         type: "integer",
@@ -81,7 +83,7 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   // Dont do anything on down...
+  pgm.dropTable("refresh_tokens");
   pgm.dropTable("users");
   pgm.dropTable("roles");
-  pgm.dropTable("refresh_tokens");
 };

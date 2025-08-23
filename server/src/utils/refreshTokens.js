@@ -14,7 +14,7 @@ export const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: "lax", // consider 'strict' for pure web apps
   secure: false, // true on HTTPS in production
-  path: "/api/auth/token", // only sent to refresh endpoint
+  path: '/', 
   maxAge: RefreshTokenTTL * 24 * 60 * 60 * 1000,
 };
 

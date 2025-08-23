@@ -11,13 +11,13 @@ import {
 } from "../utils/refreshTokens.js";
 
 export const authService = {
-  async createUser(email, password) {
-    if (!email || !password) {
-      throw new BadRequestError("both email and password fields are required");
+  async createUser(user) {
+    if (!user.email || !user.password || !user.firstName || !user.lastName) {
+      throw new BadRequestError("not all required fields were provided");
     }
 
-    const hashedPassword = await bcrypt.hash(password, bcryptSaltRounds);
-    await userRepository.insertUser(email, hashedPassword);
+    const hashedPassword = await bcrypt.hash(user.password, bcryptSaltRounds);
+    await userRepository.insertUser(user, hashedPassword);
   },
 
   async loginUser(email, password) {
@@ -45,6 +45,13 @@ export const authService = {
     };
   },
 
+  async logoutUser(cookie) {
+    const jti = cookie.split(".")[0];
+    if (jti) {
+      await refreshTokensRepository.revokeRefreshToken(jti);
+    }
+  },
+
   async refreshUserToken(req) {
     const cookie = req.cookies?.refresh_token;
     const { jti, userId } = await validateRefreshToken(cookie);
@@ -67,5 +74,10 @@ export const authService = {
       },
       accessToken: access,
     };
+  },
+
+  async validateUser(token) {
+    const { jti, userId } = await validateRefreshToken(token);
+    return userId;
   },
 };
