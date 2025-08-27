@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
 import { toast } from "sonner";
+import { config } from "../../config";
 
 type UserDetails = {
   email: string;
@@ -31,7 +32,7 @@ export default function CreateAccount() {
     if (!valid) return;
     else setError(null);
 
-    const res = await fetch("http://localhost:8081/api/auth/createAccount", {
+    const res = await fetch(`${config.authServerHost}/api/auth/createAccount`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(UserDetails),

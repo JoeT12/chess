@@ -7,6 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { config } from "../config";
 
 interface User {
   email: string;
@@ -35,7 +36,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   const refreshToken = async (): Promise<string> => {
-    const res = await fetch("http://localhost:8081/api/auth/token", {
+    const res = await fetch(`${config.authServerHost}/api/auth/token`, {
       method: "POST",
       credentials: "include",
     });
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const fetchUser = async (token: string) => {
-    const res = await fetch("http://localhost:8081/api/auth/me", {
+    const res = await fetch(`${config.authServerHost}/api/auth/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const login = async (emailInput: string, password: string) => {
-    const res = await fetch("http://localhost:8081/api/auth/login", {
+    const res = await fetch(`${config.authServerHost}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: emailInput, password }),
@@ -95,7 +96,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = async () => {
-    await fetch("http://localhost:8081/api/auth/logout", {
+    await fetch(`${config.authServerHost}/api/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

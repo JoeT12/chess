@@ -9,7 +9,7 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
-import { UIEndpoint } from "./config/env.js";
+import { UIEndpoint, port } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import { authenticateSocket } from "./middleware/authentication.js";
@@ -53,6 +53,6 @@ process.on(
   }
 );
 
-server.listen(8081, () => {
-  console.log("server running at http://localhost:8081");
+server.listen(port, () => {
+  console.log(`server running at http://localhost:${port}`);
 });

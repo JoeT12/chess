@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { config } from "./config";
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("refresh_token")?.value;
@@ -13,8 +14,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
-    // Call backend to validate refresh token
-    const res = await fetch("http://localhost:8081/api/auth/validate", {
+    const res = await fetch(`${config.authServerHost}/api/auth/validate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),

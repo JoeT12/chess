@@ -48,19 +48,14 @@ const items = [
     title: "Play Computer",
     url: "/play-computer",
     icon: Play,
-    requiresAuth: true, // mark requires auth
+    requiresAuth: true,
   },
   {
     title: "Play Online",
     url: "/play-online",
     icon: Play,
-    requiresAuth: true, // mark requires auth
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
+    requiresAuth: true,
+  }
 ];
 
 export function AppSidebar() {

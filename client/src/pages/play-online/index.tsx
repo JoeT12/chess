@@ -6,9 +6,11 @@ import ChessBoard from "@/components/ChessBoard";
 import GameOverModal from "@/components/GameOverModal";
 import { useChessGame } from "@/hooks/useChessGame";
 import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/router";
 
 export default function PlayOnline() {
-  const { accessToken } = useAuth();
+  const { accessToken, user, loading } = useAuth();
+  const router = useRouter();
   const {
     matchingOpponent,
     gameId,
@@ -21,6 +23,10 @@ export default function PlayOnline() {
     makeMove,
     resetGame,
   } = useChessGame("multiplayer", accessToken);
+
+  if(!user && !loading) { 
+    router.push('/');
+  }
 
   return (
     <>

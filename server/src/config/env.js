@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+export const port = process.env.PORT || 8081;
+
 export const numChessEngines = process.env.NUM_ENGINES || 4;
 export const numDatabaseThreads = process.env.NUM_DATABASE_CONNECTIONS || 10;
-export const bcryptSaltRounds = process.env.BCRYPT_SALT_ROUNDS || 5;
+export const bcryptSaltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 5;
 
 export const UIEndpoint = process.env.UI_ENDPOINT || "http://localhost:3000";
 

@@ -9,6 +9,7 @@ import ComboBox from "@/components/ComboBox";
 import { useComboBox } from "@/hooks/useComboBox";
 import { useEffect } from "react";
 import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/router";
 
 const AI_OPTIONS = [
   {
@@ -26,7 +27,8 @@ const AI_OPTIONS = [
 ];
 
 export default function Play() {
-  const { accessToken } = useAuth();
+  const { accessToken, user, loading } = useAuth();
+  const router = useRouter();
   const {
     gameId,
     board,
@@ -46,6 +48,10 @@ export default function Play() {
   useEffect(() => {
     setAIDifficulty(value);
   }, [value]);
+
+  if(!user && !loading) { 
+    router.push('/');
+  }
 
   return gameId === null ? (
     <>

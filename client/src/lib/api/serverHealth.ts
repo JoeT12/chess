@@ -1,5 +1,5 @@
-const SERVER_HOST = process.env.SERVER_HOST ?? "localhost:8081";
-const HEALTH_URL = `http://${SERVER_HOST}/api/health`;
+import { config } from "../../config";
+const HEALTH_URL = `${config.gameServerHost}/api/health`;
 
 export default async function isServerHealthy(): Promise<boolean> {
   try {
