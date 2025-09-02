@@ -10,3 +10,7 @@ node_modules/
 
 # Ignore any environment variable files - these will hold API keys so should NOT be uploaded to GitHub.
 .env
+
+# IDE specific files.
+.idea/
+.vscode/

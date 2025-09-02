@@ -1,0 +1,10 @@
+{
+  "name": "common-module",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "pg": "^8.16.3"
+  }
+}
