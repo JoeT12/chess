@@ -8,7 +8,10 @@ import { errorHandler } from "../../c-common/src/middleware/errorHandler.js";
 
 // Config
 import { port } from "./config/env.js";
-import { GameServiceEndpoint } from "../../c-common/src/config/env.js";
+import {
+  GameServiceEndpoint,
+  UIEndpoint,
+} from "../../c-common/src/config/env.js";
 
 // Routes
 import healthController from "./controller/healthController.js";
@@ -22,7 +25,7 @@ const server = http.createServer(app);
 
 app.use(
   cors({
-    origin: GameServiceEndpoint,
+    origin: [GameServiceEndpoint, UIEndpoint],
     methods: ["POST"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
