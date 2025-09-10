@@ -24,8 +24,8 @@ export default function PlayOnline() {
     resetGame,
   } = useChessGame("multiplayer", accessToken);
 
-  if(!user && !loading) { 
-    router.push('/');
+  if (!user && !loading) {
+    router.push("/login");
   }
 
   return (

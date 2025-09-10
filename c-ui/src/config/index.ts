@@ -7,4 +7,5 @@ export const config = {
     process.env.NEXT_PUBLIC_GAME_SERVER_HOST ?? "http://localhost:8082",
   engineServerHost:
     process.env.NEXT_PUBLIC_ENGINE_SERVER_HOST ?? "http://localhost:8083",
+  env: process.env.NODE_ENV ?? "development",
 };

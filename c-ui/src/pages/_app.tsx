@@ -34,7 +34,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <SidebarProvider>
           <div className="flex flex-col min-h-screen overflow-x-hidden">
             <div className="flex flex-1 w-full min-w-0">
-              <AppSidebar className="w-64 shrink-0" />
+              <AppSidebar />
               <main className="flex-1 p-2 w-full overflow-x-hidden">
                 <div className="flex items-center gap-4">
                   <SidebarTrigger />

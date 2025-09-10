@@ -9,11 +9,12 @@ import {
   JWTTokenTTL,
   RefreshTokenTTL,
 } from "../config/env.js";
+import { env } from "../../../c-common/src/config/env.js";
 
 export const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "lax", // consider 'strict' for pure web apps
-  secure: false, // true on HTTPS in production
+  sameSite: "none", // consider 'strict' for pure web apps
+  secure: env === "development" ? false : true, // true on HTTPS in production
   path: "/",
   maxAge: RefreshTokenTTL * 24 * 60 * 60 * 1000,
 };

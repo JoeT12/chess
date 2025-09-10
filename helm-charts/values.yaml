@@ -1,0 +1,69 @@
+certManager:
+  enabled: true
+  installCRDs: true
+
+  localCA:
+    clusterIssuerName: local-ca
+    secretName: ca-key-pair
+
+  certificate:
+    name: chess-cert
+    secretName: chess-tls
+    duration: 24h
+    renewBefore: 12h
+    organization: Chess App Dev
+    dnsName: chess.local
+    issuerName: local-ca
+
+# Postgres configuration (used by postgres subchart and other services)
+postgres:
+  image:
+    repository: postgres
+    tag: "15"
+  user: chess
+  password: secret
+  db: chess_db
+  port: 5432
+
+# Auth service
+auth:
+  image:
+    repository: c-auth
+    tag: latest
+  service:
+    port: 8081
+  replicaCount: 1
+
+# Game service
+game:
+  image:
+    repository: c-game
+    tag: latest
+  service:
+    port: 8082
+  replicaCount: 1
+
+# Engine service
+engine:
+  image:
+    repository: c-engine
+    tag: latest
+  service:
+    port: 8083
+  replicaCount: 2
+
+# UI (Next.js) service
+ui:
+  image:
+    repository: c-ui
+    tag: latest
+  service:
+    port: 3000
+  replicaCount: 1
+
+# Optional: global settings shared by all services
+global:
+  databaseHost: chess-platform-postgres
+  databaseUser: chess
+  databasePassword: secret
+  databaseName: chess_db

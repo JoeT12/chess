@@ -11,7 +11,7 @@ export const UIEndpoint = process.env.UI_ENDPOINT || "http://localhost:3000";
 export const AuthServiceEndpoint =
   process.env.AUTH_SERVICE_ENDPOINT || "http://localhost:8081";
 export const GameServiceEndpoint =
-  process.env.GAME_SERVICE_ENDPOING || "http://localhost:8082";
+  process.env.GAME_SERVICE_ENDPOINT || "http://localhost:8082";
 export const EngineServiceEndpoint =
   process.env.ENGINE_SERVICE_ENDPOINT || "http://localhost:8083";
 
@@ -27,3 +27,5 @@ export const JWTPublicKey = fs.readFileSync(
   path.join(__dirname, "public.key"),
   "utf8"
 );
+
+export const env = process.env.ENV || "development";
