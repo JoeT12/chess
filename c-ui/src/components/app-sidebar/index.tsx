@@ -8,7 +8,6 @@ import {
   User2,
   Newspaper,
 } from "lucide-react";
-import "@/styles/globals.css";
 import { useRouter } from "next/router";
 
 import {

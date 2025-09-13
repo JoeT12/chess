@@ -1,0 +1,23 @@
+certManager:
+  enabled: true
+  installCRDs: true
+
+  localCA:
+    clusterIssuerName: local-ca
+    secretName: ca-key-pair
+
+  certificate:
+    name: chess-cert
+    secretName: chess-tls
+    duration: 24h
+    renewBefore: 12h
+    organization: Chess App Dev
+    dnsName: chess.local
+    issuerName: local-ca
+
+# Global settings shared by all services
+global:
+  databaseHost: chess-platform-postgres
+  databaseUser: chess
+  databasePassword: secret
+  databaseName: chess_db

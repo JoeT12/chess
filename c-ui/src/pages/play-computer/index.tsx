@@ -49,8 +49,8 @@ export default function Play() {
     setAIDifficulty(value);
   }, [value]);
 
-  if(!user && !loading) { 
-    router.push('/');
+  if (!loading && !user) {
+    router.push("/login");
   }
 
   return gameId === null ? (

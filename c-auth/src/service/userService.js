@@ -1,4 +1,6 @@
 import { bcryptSaltRounds } from "../config/env.js";
+import bcrypt from 'bcrypt';
+import { userRepository } from "../repository/userRepository.js";
 
 export const userService = {
   async createUser(user) {

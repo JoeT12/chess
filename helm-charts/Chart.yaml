@@ -1,0 +1,33 @@
+apiVersion: v2
+name: chess-platform
+description: Umbrella Helm chart for the Chess platform
+version: 0.1.0
+
+# Declare dependencies (subcharts)
+dependencies:
+  - name: cert-manager
+    version: "v1.18.2" 
+    repository: "https://charts.jetstack.io"
+    condition: certManager.enabled
+  - name: ingress-nginx
+    version: "4.13.2"
+    repository: "https://kubernetes.github.io/ingress-nginx"
+    condition: ingressNginx.enabled
+  - name: c-auth
+    version: 0.1.0
+    repository: "file://../c-auth/helm-charts"
+  - name: c-game
+    version: 0.1.0
+    repository: "file://../c-game/helm-charts"
+  - name: c-engine
+    version: 0.1.0
+    repository: "file://../c-engine/helm-charts"
+  - name: c-ui
+    version: 0.1.0
+    repository: "file://../c-ui/helm-charts"
+  - name: postgres
+    version: 0.1.0
+    repository: "file://../db/postgres/helm-charts"
+  - name: c-db-migrate
+    version: 0.1.0
+    repository: "file://../db/c-db-migrate/helm-charts"

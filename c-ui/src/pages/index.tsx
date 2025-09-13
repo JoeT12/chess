@@ -47,7 +47,9 @@ export default function Home() {
                   <Button
                     size="lg"
                     className="h-28 flex flex-col items-center justify-center rounded-2xl shadow-md hover:shadow-xl transition-all"
-                    onClick={() => router.push("/play-online")}
+                    onClick={() => {
+                      router.push("/play-online");
+                    }}
                   >
                     <Globe className="w-8 h-8 mb-2" />
                     <span className="text-lg font-semibold">Play Online</span>

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "node-pg-migrate": "^8.0.3"
+  },
+  "scripts": {
+    "migrate": "node-pg-migrate up"
+  },
+  "type": "module"
+}

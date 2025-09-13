@@ -32,7 +32,7 @@ export default function CreateAccount() {
     if (!valid) return;
     else setError(null);
 
-    const res = await fetch(`${config.authServerHost}/api/auth/createAccount`, {
+    const res = await fetch(`${config.authServerHost}/api/user/createAccount`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(UserDetails),

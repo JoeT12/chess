@@ -1,0 +1,12 @@
+image:
+  repository: migration
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+env:
+  - name : DATABASE_URL
+    value : "postgres://chess:secret@chess-platform-postgres:5432/chess_db"
+
+postgres:
+  host: chess-platform-postgres
+  port: 5432
