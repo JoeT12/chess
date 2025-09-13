@@ -29,7 +29,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: "c-auth"
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -62,14 +62,12 @@ ingress:
   className: "nginx"
   annotations: {
     nginx.ingress.kubernetes.io/ssl-redirect: "true",
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$2 # This annotation allows us to remove the /auth prefix from any incoming requests before forwarding to the express router.
   }
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chess.local
       paths:
-        - path: /auth(/|$)(.*)
+        - path: /auth(/|$)(.*) # Match any URL with /auth.
           pathType: ImplementationSpecific
   tls: 
    - secretName: chess-tls
@@ -103,7 +101,7 @@ readinessProbe:
 autoscaling:
   enabled: true
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
@@ -128,4 +126,4 @@ affinity: {}
 
 env:
   - name: UI_ENDPOINT
-    value: "http://ui.localtest.me"
+    value: "https://chess.local"

@@ -44,13 +44,17 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- with .Values.env }}
           env:
-            {{- range . }}
+            - name: POSTGRES_USER
+              value: "{{ .Values.global.databaseUser }}"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.global.databasePassword }}"
+            - name: POSTGRES_DB
+              value: "{{ .Values.global.databaseName }}"
+            {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
-          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

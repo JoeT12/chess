@@ -44,6 +44,19 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            - name: DATABASE_HOST
+              value: "{{ .Values.global.databaseHost }}"
+            - name: DATABASE_USER
+              value: "{{ .Values.global.databaseUser }}"
+            - name: DATABASE_PASSWORD
+              value: "{{ .Values.global.databasePassword }}"
+            - name: DATABASE_NAME
+              value: "{{ .Values.global.databaseName }}"
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -60,19 +73,6 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          env:
-            {{- range .Values.env }}
-            - name: {{ .name }}
-              value: {{ .value | quote }}
-            {{- end }}
-            - name: DATABASE_HOST
-              value: "{{ .Values.global.databaseHost }}"
-            - name: DATABASE_USER
-              value: "{{ .Values.global.databaseUser }}"
-            - name: DATABASE_PASSWORD
-              value: "{{ .Values.global.databasePassword }}"
-            - name: DATABASE_NAME
-              value: "{{ .Values.global.databaseName }}"
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

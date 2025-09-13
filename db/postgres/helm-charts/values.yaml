@@ -7,11 +7,11 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: nginx
+  repository: postgres
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "15"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -29,7 +29,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: "c-postgres"
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -59,15 +59,9 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
-  className: "nginx"
+  className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: posgres.localhost
-      paths:
-        - path: /
-          pathType: Prefix
+  hosts: {}
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -106,7 +100,7 @@ readinessProbe:
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
@@ -129,10 +123,12 @@ tolerations: []
 
 affinity: {}
 
-env:
-  - name: POSTGRES_USER
-    value: chess
-  - name: POSTGRES_PASSWORD
-    value: secret
-  - name: POSTGRES_DB
-    value: chess_db
+# Uncomment to overwrite globally set db vars.
+# This will need to be done if Postgres is deployed seperately.
+# env:
+  # - name: POSTGRES_USER
+  #   value: chess
+  # - name: POSTGRES_PASSWORD
+  #   value: secret
+  # - name: POSTGRES_DB
+  #   value: chess_db
